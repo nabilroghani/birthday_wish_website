@@ -520,7 +520,385 @@
     Developed with ❤️ by Nabil Ahmad
   </div>
 
- 
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+  <script>
+    // Floating Emojis
+    const emojis = ["🎈", "🎉", "🎂", "🥳", "🎊", "✨", "❤️", "🎁", "🍰", "👑"];
+    for (let i = 0; i < 30; i++) {
+      const el = document.createElement('div');
+      el.classList.add('float-item');
+      el.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.top = Math.random() * 100 + 'vh';
+      el.style.animationDuration = (5 + Math.random() * 15) + 's';
+      el.style.animationDelay = Math.random() * 5 + 's';
+      el.style.fontSize = (20 + Math.random() * 20) + 'px';
+      document.body.appendChild(el);
+    }
+
+    // Load saved data or set defaults
+    let targetDate = localStorage.getItem('birthdayDate') || new Date().toISOString().split('T')[0];
+    let birthdayPerson = localStorage.getItem('birthdayPerson') || "Someone Special";
+    let savedPhoto = localStorage.getItem('birthdayPhoto');
+    document.getElementById('datePicker').value = targetDate;
+    document.getElementById('personName').value = birthdayPerson;
+    document.getElementById('birthdayPerson').textContent = birthdayPerson;
+    document.getElementById('themeSelect').value = localStorage.getItem('theme') || 'light';
+
+    if (savedPhoto) {
+      document.getElementById('birthdayPhoto').src = savedPhoto;
+      document.getElementById('birthdayPhoto').style.display = 'block';
+    }
+
+    // Load saved wishes
+    const savedWishes = JSON.parse(localStorage.getItem('birthdayWishes')) || [];
+    const messagesContainer = document.getElementById('messages');
+    
+    if (savedWishes.length > 0) {
+      messagesContainer.innerHTML = '';
+      savedWishes.forEach(wish => {
+        addMessageToDOM(wish.name, wish.wish, wish.timestamp, wish.image);
+      });
+    }
+
+    // Load saved memories
+    const savedMemories = JSON.parse(localStorage.getItem('birthdayMemories')) || [];
+    const memoryContainer = document.getElementById('memoryContainer');
+    
+    if (savedMemories.length > 0) {
+      memoryContainer.innerHTML = '';
+      savedMemories.forEach(memory => {
+        addMemoryToDOM(memory);
+      });
+    }
+
+    // Update progress bar and countdown
+    function updateCountdown() {
+      const now = new Date();
+      const end = new Date(targetDate);
+      const start = new Date(end);
+      start.setFullYear(start.getFullYear() - 1);
+      
+      const totalDuration = end - start;
+      const elapsed = now - start;
+      const remaining = end - now;
+
+      // Update progress bar
+      const progressPercent = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
+      document.getElementById('progress-bar').style.width = progressPercent + '%';
+
+      // Handle different countdown states
+      if (remaining <= 0) {
+        // Birthday is today or passed
+        if (now.toDateString() === end.toDateString()) {
+          document.getElementById('countdown').innerHTML = 
+            `🎊 <strong>Today's the day!</strong> 🎉<br>Happy Birthday, ${birthdayPerson}! Wishing you an amazing celebration!`;
+          // Trigger celebration effects
+          if (!localStorage.getItem('celebratedToday')) {
+            triggerCelebration();
+            localStorage.setItem('celebratedToday', 'true');
+          }
+        } else if (remaining < -86400000) { // More than 1 day passed
+          document.getElementById('countdown').innerHTML = 
+            `🎈 <strong>${birthdayPerson}'s birthday was on ${end.toLocaleDateString()}</strong><br>
+             Hope it was a wonderful celebration!`;
+        }
+        return;
+      } else {
+        localStorage.removeItem('celebratedToday');
+      }
+
+      // Calculate time remaining
+      const d = Math.floor(remaining / (1000 * 60 * 60 * 24));
+      const h = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((remaining % (1000 * 60)) / 1000);
+
+      // Display countdown
+      document.getElementById('countdown').innerHTML = 
+        `⏳ <strong>${d} day${d !== 1 ? 's' : ''}</strong>, 
+         <strong>${h} hour${h !== 1 ? 's' : ''}</strong>, 
+         <strong>${m} minute${m !== 1 ? 's' : ''}</strong> until ${birthdayPerson}'s birthday!`;
+
+      setTimeout(updateCountdown, 1000);
+    }
+    updateCountdown();
+
+    function triggerCelebration() {
+      // Confetti
+      confetti({
+        particleCount: 500,
+        spread: 100,
+        origin: { y: 0.6 },
+        colors: ['#ff0000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#ff00ff']
+      });
+
+      // Play celebration sound
+      const sound = document.getElementById('celebrationSound');
+      sound.currentTime = 0;
+      sound.play();
+
+      // Flash party lights
+      document.body.classList.add('party');
+      setTimeout(() => {
+        document.body.classList.remove('party');
+      }, 5000);
+    }
+
+    function addMessageToDOM(name, wish, timestamp, imageData = null) {
+      const div = document.createElement('div');
+      div.className = 'message';
+      
+      const messageContent = name ? `<strong>${name}</strong> says: "${wish}"` : wish;
+      const time = new Date(timestamp).toLocaleString();
+      
+      let imageHTML = '';
+      if (imageData) {
+        imageHTML = `<img src="${imageData}" alt="Attached image">`;
+      }
+      
+      div.innerHTML = `${messageContent}${imageHTML}<div class="timestamp">${time}</div>`;
+      
+      messagesContainer.prepend(div);
+      
+      // Remove empty state if it exists
+      const emptyState = messagesContainer.querySelector('.empty-state');
+      if (emptyState) {
+        emptyState.remove();
+      }
+    }
+
+    function addMemoryToDOM(imageData) {
+      const memoryItem = document.createElement('div');
+      memoryItem.className = 'memory-item';
+      
+      memoryItem.innerHTML = `
+        <img src="${imageData}" alt="Birthday memory">
+        <button class="delete-memory" onclick="deleteMemory(this)">×</button>
+      `;
+      
+      // Remove empty state if it exists
+      const emptyState = memoryContainer.querySelector('.empty-state');
+      if (emptyState) {
+        emptyState.remove();
+      }
+      
+      memoryContainer.prepend(memoryItem);
+    }
+
+    function sendWish() {
+      const name = document.getElementById('nameInput').value.trim();
+      const wish = document.getElementById('wishInput').value.trim();
+      if (!wish) {
+        alert("Please write a birthday wish before sending!");
+        return;
+      }
+
+      const timestamp = new Date().toISOString();
+      const wishObj = { name, wish, timestamp };
+      
+      // Add to DOM
+      addMessageToDOM(name, wish, timestamp);
+      
+      // Save to local storage
+      const savedWishes = JSON.parse(localStorage.getItem('birthdayWishes')) || [];
+      savedWishes.unshift(wishObj);
+      localStorage.setItem('birthdayWishes', JSON.stringify(savedWishes));
+      
+      // Celebrate!
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#ff4081', '#42a5f5', '#66bb6a', '#ffa726']
+      });
+
+      // Play celebration sound
+      const sound = document.getElementById('celebrationSound');
+      sound.currentTime = 0;
+      sound.play();
+      
+      // Clear inputs
+      document.getElementById('wishInput').value = '';
+      document.getElementById('nameInput').value = '';
+      
+      // Focus back on wish input
+      document.getElementById('wishInput').focus();
+    }
+
+    function saveSettings() {
+      const date = document.getElementById('datePicker').value;
+      const person = document.getElementById('personName').value.trim() || "Someone Special";
+      const theme = document.getElementById('themeSelect').value;
+      
+      if (date) {
+        localStorage.setItem('birthdayDate', date);
+        localStorage.setItem('birthdayPerson', person);
+        localStorage.setItem('theme', theme);
+        targetDate = date;
+        birthdayPerson = person;
+        document.getElementById('birthdayPerson').textContent = person;
+        document.getElementById('sidebar').classList.remove('open');
+        
+        // Apply theme
+        document.body.className = theme;
+        
+        updateCountdown();
+        
+        // Show confirmation
+        alert('Birthday settings saved successfully!');
+      } else {
+        alert('Please select a valid date');
+      }
+    }
+
+    function clearAllWishes() {
+      if (confirm('Are you sure you want to delete all birthday wishes? This cannot be undone.')) {
+        localStorage.removeItem('birthdayWishes');
+        messagesContainer.innerHTML = '<div class="empty-state">No wishes yet. Be the first to send your birthday greetings!</div>';
+      }
+    }
+
+    function deleteMemory(button) {
+      const memoryItem = button.parentElement;
+      const imgSrc = memoryItem.querySelector('img').src;
+      
+      // Remove from DOM
+      memoryItem.remove();
+      
+      // Remove from local storage
+      const savedMemories = JSON.parse(localStorage.getItem('birthdayMemories')) || [];
+      const updatedMemories = savedMemories.filter(memory => memory !== imgSrc);
+      localStorage.setItem('birthdayMemories', JSON.stringify(updatedMemories));
+      
+      // Show empty state if no memories left
+      if (memoryContainer.children.length === 0) {
+        memoryContainer.innerHTML = '<div class="empty-state">No memories yet. Add photos from past celebrations!</div>';
+      }
+    }
+
+    function openTab(tabName) {
+      // Hide all tab contents
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Deactivate all tabs
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Activate selected tab
+      document.getElementById(tabName).classList.add('active');
+      document.querySelector(`.tab[onclick="openTab('${tabName}')"]`).classList.add('active');
+    }
+
+    // Photo upload handling
+    document.getElementById('photoUpload').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const photoUrl = event.target.result;
+          document.getElementById('birthdayPhoto').src = photoUrl;
+          document.getElementById('birthdayPhoto').style.display = 'block';
+          localStorage.setItem('birthdayPhoto', photoUrl);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Memory photo upload handling
+    document.getElementById('memoryUpload').addEventListener('change', function(e) {
+      const files = e.target.files;
+      if (files.length > 0) {
+        const savedMemories = JSON.parse(localStorage.getItem('birthdayMemories')) || [];
+        
+        Array.from(files).forEach(file => {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            const imageData = event.target.result;
+            addMemoryToDOM(imageData);
+            savedMemories.unshift(imageData);
+            localStorage.setItem('birthdayMemories', JSON.stringify(savedMemories));
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+    });
+
+    // Music toggle
+    const musicToggle = document.getElementById('musicToggle');
+    const birthdayAudio = document.getElementById('birthdayAudio');
+    
+    musicToggle.addEventListener('click', function() {
+      if (birthdayAudio.paused) {
+        birthdayAudio.play();
+        musicToggle.innerHTML = '🔊 Music';
+        localStorage.setItem('musicOn', 'true');
+      } else {
+        birthdayAudio.pause();
+        musicToggle.innerHTML = '🔇 Music';
+        localStorage.removeItem('musicOn');
+      }
+    });
+
+    // Check music preference
+    if (localStorage.getItem('musicOn') === 'true') {
+      birthdayAudio.play();
+      musicToggle.innerHTML = '🔊 Music';
+    }
+
+    // Theme toggle
+    document.getElementById('toggleTheme').addEventListener('click', function() {
+      const currentTheme = localStorage.getItem('theme') || 'light';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      document.body.className = newTheme;
+      localStorage.setItem('theme', newTheme);
+      document.getElementById('themeSelect').value = newTheme;
+    });
+
+    // Apply saved theme on load
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.body.className = savedTheme;
+    document.getElementById('themeSelect').value = savedTheme;
+
+    // Share functions
+    function shareOnFacebook() {
+      const url = encodeURIComponent(window.location.href);
+      window.open(`https://www.facebook.com/nabilroghani?mibextid=wwXIfr&mibextid=wwXIfr=${url}`, '_blank');
+    }
+
+    function shareOnLinkedIn() {
+  const text = encodeURIComponent(`Celebrate ${birthdayPerson}'s birthday with me!`);
+  const url = encodeURIComponent(window.location.href);
+  window.open(`https://www.linkedin.com/in/nabil-ahmad-0750002b1?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app${url}`, '_blank');
+}
+
+    function shareOnWhatsApp() {
+      const text = encodeURIComponent(`Celebrate ${birthdayPerson}'s birthday with me! ${window.location.href}`);
+      window.open(`https://wa.me/?text=${text}`, '_blank');
+    }
+
+    function copyLink() {
+      navigator.clipboard.writeText(window.location.href);
+      alert('Link copied to clipboard!');
+    }
+
+    // Handle Enter key in textarea
+    document.getElementById('wishInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendWish();
+      }
+    });
+
+    // Sidebar toggle
+    document.getElementById('openSidebar').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.toggle('open');
+    });
+  </script>
 
 </body>
 </html>
