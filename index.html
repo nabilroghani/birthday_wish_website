@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>🎉 Ultimate Birthday Countdown 🎈</title>
+  
+</head>
+<body>
+
+  <div class="control-buttons">
+    <button class="control-button" id="openSidebar">📅 Settings</button>
+    <button class="control-button secondary" id="musicToggle">🔇 Music</button>
+  </div>
+  <button class="control-button" id="toggleTheme">🌙 Theme</button>
+
+  <h1>🎂 Ultimate Birthday Countdown 🎉</h1>
+  <div id="countdown">Loading countdown...</div>
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+  <div class="birthday-person" id="birthdayPerson"></div>
+  <img id="birthdayPhoto" class="birthday-photo" src="" alt="Birthday Person" style="display: none;">
+
+  <div class="container">
+    <div class="tab-container">
+      <button class="tab active" onclick="openTab('wishes')">Wishes</button>
+      <button class="tab" onclick="openTab('memories')">Memories</button>
+    </div>
+
+    <div id="wishes" class="tab-content active">
+      <input type="text" id="nameInput" placeholder="Your name (optional)">
+      <textarea id="wishInput" placeholder="Write your heartfelt birthday wish here..."></textarea>
+      <button onclick="sendWish()">Send Birthday Wish 🎁</button>
+      <div class="messages" id="messages">
+        <div class="empty-state">No wishes yet. Be the first to send your birthday greetings!</div>
+      </div>
+    </div>
+
+    <div id="memories" class="tab-content">
+      <input type="file" id="memoryUpload" accept="image/*" style="display: none;">
+      <button onclick="document.getElementById('memoryUpload').click()" class="secondary">📸 Add Memory Photo</button>
+      <div class="memory-container" id="memoryContainer">
+        <div class="empty-state">No memories yet. Add photos from past celebrations!</div>
+      </div>
+    </div>
+
+    <div class="social-share">
+      <button onclick="shareOnFacebook()" style="background: #3b5998;">f</button>
+      <button onclick="shareOnTwitter()" style="background: #1da1f2;">𝕏</button>
+      <button onclick="shareOnWhatsApp()" style="background: #25d366;">WA</button>
+      <button onclick="copyLink()" class="secondary">🔗 Copy</button>
+    </div>
+  </div>
+
+  <div id="sidebar">
+    <h3>🎯 Birthday Settings</h3>
+    <div style="margin-bottom: 15px;">
+      <label for="personName">Birthday Person's Name:</label>
+      <input type="text" id="personName" placeholder="Who are we celebrating?">
+    </div>
+    <div style="margin-bottom: 15px;">
+      <label for="datePicker">Birthday Date:</label>
+      <input type="date" id="datePicker">
+    </div>
+    <div style="margin-bottom: 15px;">
+      <label for="themeSelect">Color Theme:</label>
+      <select id="themeSelect">
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+        <option value="party">Party</option>
+      </select>
+    </div>
+    <div style="margin-bottom: 15px;">
+      <label>Birthday Photo:</label>
+      <input type="file" id="photoUpload" accept="image/*">
+    </div>
+    <button onclick="saveSettings()" class="secondary">Save Settings</button>
+    <button onclick="clearAllWishes()" style="margin-top: 10px;">Clear All Wishes</button>
+    <div style="margin-top: 20px; font-size: 0.9rem; color: #666;">
+      <p>Share this page with friends to collect birthday wishes!</p>
+    </div>
+  </div>
+
+  <audio id="birthdayAudio" loop>
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+  </audio>
+
+  <audio id="celebrationSound">
+    <source src="https://www.soundjay.com/human/sounds/applause-01.mp3" type="audio/mpeg">
+  </audio>
+
+  <div class="developer-credit">
+    Developed with ❤️ by Nabil Ahmad
+  </div>
+
+ 
+
+</body>
+</html>
